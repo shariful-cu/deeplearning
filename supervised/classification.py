@@ -32,10 +32,17 @@ from sklearn.preprocessing import MinMaxScaler
 data = Data()
 train_set, test_set = data.sampling() #default train size is 70%
 
-# Convert the target to categorical: target [TODO: IMPROVEMENT NEED]
-lab_train = np.array(train_set.iloc[:,-1])
-lab_train[lab_train==94] = 0
-lab_train[lab_train==95] = 1
+# FUNCTION: Convert labels from categorical to numbers incrementally from 0 
+#           to number of unique labels
+def categorical_to_number(labels):# labels is a numpy array(:,1)
+    init_label = 0
+    for label in np.unique(labels):
+        labels[labels==label] = init_label
+        init_label += 1
+    
+    return labels
+
+lab_train =  categorical_to_number(np.array(train_set.iloc[:,-1]))   
 target = to_categorical(lab_train)
 
 # normalizing predictors
@@ -66,18 +73,14 @@ def get_new_model(input_shape = (n_cols,)):
 
 
 early_stopping_monitor = EarlyStopping(patience=2)
-
 model = get_new_model()
-    
-# Compile the model
+    # Compile the model
 model.compile(optimizer = 'sgd', loss = 'categorical_crossentropy', \
               metrics = ['accuracy'])
-    
-# Fit the model
+    # Fit the model
 model.fit(predictors, target, validation_split = 0.3, \
           callbacks = [early_stopping_monitor], epochs=10)
-  
-#save the model
+  #save the model
 dir_path=os.path.dirname(__file__)
 filePath = dir_path + '/gait_dl2_model.h5'
 model.save(filePath)
@@ -90,10 +93,8 @@ df_test = test_set.iloc[:,0:-1]
 scaler = MinMaxScaler()
 df_test = scaler.fit_transform(df_test)
 
-# labeling test set       [TODO: IMPROVEMENT NEED]
-lab_test = np.array(test_set.iloc[:,-1])
-lab_test[lab_test==94] = 0
-lab_test[lab_test==95] = 1
+# labeling test set
+lab_test = categorical_to_number(np.array(test_set.iloc[:,-1]))
 
 #predict scores on test set
 predictions = model.predict(df_test)
