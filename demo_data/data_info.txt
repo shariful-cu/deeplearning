@@ -1,7 +1,7 @@
 =============== DEMO_GAIT_DATA ==================
 
 File Name:
-	demo_gait_data.csv (index=False, header=None)
+	gait_data.csv (index=False, header=None)
 
 Read instruction:
 	pd.read_csv(path, index_col=None, header=None)
@@ -11,3 +11,18 @@ Number of Classes:
 
 Total Number of observations: 
 	48 (equally distributed among all classes)
+
+=============== DEMO_ADFA_LD_DATA ==================
+
+
+File Name:
+	adfa_ld.csv (index=False)
+
+Read instruction:
+	pd.read_csv(path, index_col=None, header=None)
+
+Number of Classes: 
+	2 (normal(0) and attack(1)), stored at last column
+
+Total Number of observations: 
+	[0:79] 'normal' and [80:-1] 'attack' observations

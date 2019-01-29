@@ -24,10 +24,14 @@ class Data:
         if os.path.isfile(path_of_data):    
             dataset = pd.read_csv(path_of_data + '/gait_data.csv', \
                               index_col = None, header=None)
+            dataset = dataset.drop(dataset.std()[dataset.std() == 0].index, \
+                                   axis=1)
         else:
             path_of_data = os.path.dirname(__file__) + '/demo_data' 
             dataset = pd.read_csv(path_of_data + '/gait_data.csv', \
                               index_col = None, header=None)
+            dataset = dataset.drop(dataset.std()[dataset.std() == 0].index, \
+                                   axis=1)
         
         setattr(self, "dataset", dataset)
         
