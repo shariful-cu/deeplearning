@@ -26,7 +26,7 @@ class LstmAutoEncoder(object):
     @staticmethod
     def create_model(time_window_size, metric):
         model = Sequential()
-        model.add(LSTM(units=200, input_shape=(time_window_size, 1), return_sequences=False))
+        model.add(LSTM(units=128, input_shape=(time_window_size, 1), return_sequences=False))
 
         model.add(Dense(units=time_window_size, activation='linear'))
 
@@ -59,9 +59,9 @@ class LstmAutoEncoder(object):
     def fit(self, timeseries_dataset, model_dir_path, batch_size=None, epochs=None, validation_split=None, metric=None,
             estimated_negative_sample_ratio=None):
         if batch_size is None:
-            batch_size = 10
+            batch_size = 100
         if epochs is None:
-            epochs = 1000
+            epochs = 20
         if validation_split is None:
             validation_split = 0.2
         if metric is None:
@@ -89,7 +89,7 @@ class LstmAutoEncoder(object):
 #        scores.sort()
 #        cut_point = int(estimated_negative_sample_ratio * len(scores))
 #        self.threshold = scores[cut_point]
-        self.threshold = scores.max()
+        self.threshold = scores.mean()
 
         print('estimated threshold is ' + str(self.threshold))
 
