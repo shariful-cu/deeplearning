@@ -6,6 +6,17 @@ Created on Mon Nov 26 23:43:07 2018
 @author: Shariful
 """
 
+
+
+import os, sys
+path = os.path.abspath(__file__)
+dir_path = os.path.dirname(path)
+idx = dir_path.rfind('/')
+if idx == -1:
+    idx = dir_path.rfind('\\')
+sys.path.append(dir_path[: -(len(dir_path) - idx)])
+
+
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 from keras_anomaly_detection.library.plot_utils import visualize_reconstruction_error
@@ -46,7 +57,9 @@ def base_tf_idf(train_set, test_set, train_mode=True):
         return True
 
 def main():
-#    train_path = '/Users/Shariful/Documents/GitHubRepo/Datasets/ADFA-LD/n-gram/5-gram/train/5_gram.csv'
+#================read training dataset====================
+
+    #    train_path = '/Users/Shariful/Documents/GitHubRepo/Datasets/ADFA-LD/n-gram/5-gram/train/5_gram.csv'
 #    attack test path
 #    test_path = '/Users/Shariful/Documents/GitHubRepo/Datasets/ADFA-LD/n-gram/5-gram/5_gram_attack_2.csv'
 #    test_data = pd.read_csv(test_path, index_col=0, usecols=[0,1,2,3,4,5])
@@ -63,21 +76,28 @@ def main():
 #    adfa_data = pd.read_csv(data_dir_path + '/ecg_discord_test.csv', header=None)
     adfa_data = pd.read_csv(data_dir_path + '/5_gram.csv', \
                            index_col=0, usecols=[0,1,2,3,4,5])
-#    ['0','1','2','3','4']
-#    adfa_data = adfa_data.iloc[:, 0:-1]
-#    print(adfa_data.head())
-    adfa_np_data = adfa_data.as_matrix()
-#    scaler = MinMaxScaler()
-#    adfa_np_data = scaler.fit_transform(adfa_np_data)
-#    print(adfa_np_data.shape)
 
-    ae = LstmAutoEncoder()
-
+##==================Fit the LSTM model=====================
+##    ['0','1','2','3','4']
+##    adfa_data = adfa_data.iloc[:, 0:-1]
+##    print(adfa_data.head())
+#    adfa_np_data = adfa_data.as_matrix()
+##    scaler = MinMaxScaler()
+##    adfa_np_data = scaler.fit_transform(adfa_np_data)
+##    print(adfa_np_data.shape)
+#
+#    ae = LstmAutoEncoder()
+#
 #    # fit the data and save model into model_dir_path
-#    ae.fit(adfa_np_data, model_dir_path=model_dir_path, estimated_negative_sample_ratio=0.9)
+#    ae.fit(adfa_np_data, model_dir_path=model_dir_path, batch_size=100, \
+#           epochs=20, estimated_negative_sample_ratio=None)
 
-    # load back the model saved in model_dir_path detect anomaly
-    ae.load_model(model_dir_path)
+##==========Load the saved model===========
+#    
+#    # load back the model saved in model_dir_path detect anomaly
+#    ae.load_model(model_dir_path)
+
+#=============read test dataset===============
     
 #    test data set
     test_idx_path = '/Users/Shariful/Documents/GitHubRepo/Datasets/ADFA-LD/n-gram/5-gram/5_gram_test_idx.csv'
@@ -92,29 +112,42 @@ def main():
         
 #    ecg_np_test_data = adfa_np_data[0:43559, :]
 #    test_data_np = np.vstack((ecg_np_test_data, test_data_np))
-    
-#    anomaly_information = ae.anomaly(adfa_np_data[:23, :])
-    anomaly_information = ae.anomaly(df_test_np, threshold=150)
-#    reconstruction_error = []
-    idx_out = 0
-    max_scores = np.zeros((df_test_idx.shape[0]))
-    for idx_in, (is_anomaly, dist) in enumerate(anomaly_information):
-#        print('# ' + str(idx) + ' is ' + ('abnormal' if is_anomaly else 'normal') + ' (dist: ' + str(dist) + ')')
-#        reconstruction_error.append(dist)
-        if idx_in <= df_test_idx.loc[idx_out][:][1]:
-            if max_scores[idx_out] < dist:
-                max_scores[idx_out] = dist
-        else:
-            idx_out += 1
-            max_scores[idx_out] = dist
 
-#    visualize_reconstruction_error(reconstruction_error, ae.threshold)
-    visualize_reconstruction_error(max_scores, ae.threshold)
-#    max_scores = pd.read_csv('/Users/Shariful/Documents/GitHubRepo/deeplearning/syscall_anomaly/scores_on_testset/lstm_128_units.csv', \
-#                            header = None)
-#    visualize_reconstruction_error(max_scores, 150)
+##================predict scores on testing set============
+#
+#    
+##    anomaly_information = ae.anomaly(adfa_np_data[:23, :])
+#    anomaly_information = ae.anomaly(df_test_np, threshold=150)
+##    reconstruction_error = []
+#    idx_out = 0
+#    max_scores = np.zeros((df_test_idx.shape[0]))
+#    for idx_in, (is_anomaly, dist) in enumerate(anomaly_information):
+##        print('# ' + str(idx) + ' is ' + ('abnormal' if is_anomaly else 'normal') + ' (dist: ' + str(dist) + ')')
+##        reconstruction_error.append(dist)
+#
+#        #finding the maximum score out of all subsequences' scores
+#        if idx_in <= df_test_idx.loc[idx_out][:][1]:
+#            if max_scores[idx_out] < dist:
+#                max_scores[idx_out] = dist
+#        else:
+#            idx_out += 1
+#            max_scores[idx_out] = dist
+#
+##    visualize_reconstruction_error(reconstruction_error, ae.threshold)
+#    visualize_reconstruction_error(max_scores, ae.threshold)
+    
+    
+#=============load and plot the computed scores on testing set==============  
+    
+    max_scores = pd.read_csv('/Users/Shariful/Documents/GitHubRepo/deeplearning/syscall_anomaly/scores_on_testset/lstm_128_units.csv', \
+                            header = None)
+    visualize_reconstruction_error(max_scores, 150)
+    
+#    draw the roc curve
     plot_ROC(test_labels, max_scores)
-    np.savetxt(score_dir_path + '/lstm_128_units.csv', max_scores, delimiter=",")
+    
+##    save the computed scores
+#    np.savetxt(score_dir_path + '/lstm_128_units.csv', max_scores, delimiter=",")
     
 
 #
